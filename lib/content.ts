@@ -1,0 +1,602 @@
+import type { L } from "./i18n";
+
+export type Tone = "navy" | "violet" | "mint" | "amber";
+export type IconKey = "fin" | "crm" | "inv" | "hr" | "pay" | "prj" | "mfg" | "hd" | "bi" | "ai" | "pos" | "shop" | "exp" | "doc" | "mkt" | "fleet";
+export type ShotKind = "invoice" | "kanban" | "inventory" | "phone" | "payroll" | "dashboard" | "helpdesk" | "ai" | "pos" | "store" | "expense" | "sign" | "campaign";
+export type AppCat = "finance" | "sales" | "operations" | "people" | "services";
+type Cell = string | L;
+
+export type App = {
+  slug: string;
+  icon: IconKey;
+  tone: Tone;
+  name: L;
+  short: L;
+  headline: L;
+  intro: L;
+  highlights: { title: L; text: L }[];
+  features: L[];
+  platforms: string[]; // platform slugs
+  kpi: { value: L; label: L };
+  replaces: L[];
+  mock: { title: L; cols: L[]; rows: Cell[][] };
+  cat?: AppCat;
+  shot?: ShotKind;
+};
+
+export type Platform = {
+  slug: string;
+  group: "sa" | "jo" | "biz";
+  badge: string;
+  tone: Tone;
+  name: L;
+  owner: L;
+  summary: L;
+  steps: L[];
+  /** logo files in /public/platforms; several for grouped integrations */
+  logos?: string[];
+};
+
+/* ------------------------------------------------------------------ */
+/* Apps                                                                */
+/* ------------------------------------------------------------------ */
+const coreApps: App[] = [
+  {
+    slug: "accounting",
+    icon: "fin",
+    tone: "navy",
+    name: { ar: "المالية والمحاسبة", en: "Accounting & Finance" },
+    short: { ar: "فواتير ومطابقة بنكية", en: "Invoicing & bank sync" },
+    headline: { ar: "المحاسبة التي تُرسل فواتيرها بنفسها", en: "Accounting that files its own invoices" },
+    intro: {
+      ar: "كل فاتورة تصدرها تُوقَّع وتُرسل إلى منصة الفوترة لحظة إصدارها، والكشف البنكي يُطابق تلقائياً، والتقارير المالية جاهزة دون انتظار آخر الشهر.",
+      en: "Every invoice is signed and sent to the e-invoicing platform the moment it is issued, bank statements reconcile themselves, and financial reports are ready without waiting for month end.",
+    },
+    highlights: [
+      { title: { ar: "فوترة إلكترونية مدمجة", en: "Built-in e-invoicing" }, text: { ar: "ZATCA في السعودية وJoFotara في الأردن. رمز QR وحالة الاعتماد تظهر على كل فاتورة.", en: "ZATCA in Saudi Arabia and JoFotara in Jordan. The QR code and clearance status appear on every invoice." } },
+      { title: { ar: "مطابقة بنكية تلقائية", en: "Automatic bank reconciliation" }, text: { ar: "استيراد الكشف ومطابقة الدفعات مع الفواتير بقواعد تتعلم من قراراتك.", en: "Statements are imported and matched to invoices with rules that learn from your choices." } },
+      { title: { ar: "إقفال أسرع", en: "Faster close" }, text: { ar: "القيود تتولد من المبيعات والمشتريات والرواتب، فيبقى للمحاسب المراجعة فقط.", en: "Entries come from sales, purchasing and payroll, so accountants only review." } },
+    ],
+    features: [
+      { ar: "دفتر الأستاذ وشجرة الحسابات", en: "General ledger & chart of accounts" },
+      { ar: "الذمم المدينة والدائنة", en: "Receivables & payables" },
+      { ar: "المطابقة البنكية", en: "Bank reconciliation" },
+      { ar: "الإقرارات الضريبية", en: "Tax returns" },
+      { ar: "الموازنات ومراكز التكلفة", en: "Budgets & cost centres" },
+      { ar: "تقارير مالية لحظية", en: "Real-time financial reports" },
+    ],
+    platforms: ["zatca", "jofotara", "banks", "payments"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "إقفال شهر أسرع", en: "A faster month-end close" } },
+    replaces: [{ ar: "QuickBooks", en: "QuickBooks" }, { ar: "جداول Excel", en: "Excel sheets" }, { ar: "الرفع اليدوي إلى بوابة الفوترة", en: "Manual uploads to the e-invoicing portal" }],
+    mock: {
+      title: { ar: "الفواتير", en: "Invoices" },
+      cols: [{ ar: "الرقم", en: "Number" }, { ar: "العميل", en: "Customer" }, { ar: "المبلغ", en: "Amount" }, { ar: "المنصة", en: "Platform" }],
+      rows: [
+        ["INV/0412", { ar: "مؤسسة الريان", en: "Al Rayan Est." }, "9,200", { ar: "معتمدة", en: "Cleared" }],
+        ["INV/0418", { ar: "نخبة البناء", en: "Nokhba Build" }, "6,750", { ar: "معتمدة", en: "Cleared" }],
+        ["INV/0421", { ar: "متجر أفق", en: "Ofoq Store" }, "2,500", { ar: "بانتظار", en: "Pending" }],
+      ],
+    },
+  },
+  {
+    slug: "crm-sales",
+    icon: "crm",
+    tone: "violet",
+    name: { ar: "المبيعات وعلاقات العملاء", en: "CRM & Sales" },
+    short: { ar: "من الفرصة إلى الفاتورة", en: "Lead to invoice" },
+    headline: { ar: "من أول اتصال إلى الفاتورة في مسار واحد", en: "From first call to invoice in one flow" },
+    intro: {
+      ar: "عرض السعر يتحول إلى أمر بيع ثم فاتورة دون نسخ، والمندوب يرى المخزون المتاح قبل أن يعد العميل، والإدارة ترى المسار كاملاً.",
+      en: "Quotes become sales orders and invoices without retyping, reps see live stock before they promise a date, and management sees the whole pipeline.",
+    },
+    highlights: [
+      { title: { ar: "مسار مبيعات واضح", en: "A clear pipeline" }, text: { ar: "لوحة كانبان لكل فرصة مع المرحلة والقيمة المتوقعة والخطوة التالية.", en: "A kanban board for every opportunity with stage, expected value and next step." } },
+      { title: { ar: "عروض أسعار بسرعة", en: "Quotes in moments" }, text: { ar: "قوالب بالعربية والإنجليزية، توقيع إلكتروني، ودفع أونلاين من نفس الرابط.", en: "Arabic and English templates, e-signature and online payment from the same link." } },
+      { title: { ar: "متابعة عبر واتساب", en: "WhatsApp follow-up" }, text: { ar: "إرسال العرض والتذكير وحالة الطلب للعميل على واتساب من داخل النظام.", en: "Send quotes, reminders and order status to customers on WhatsApp from inside the system." } },
+    ],
+    features: [
+      { ar: "العملاء المحتملون والفرص", en: "Leads & opportunities" },
+      { ar: "التنبؤ بالمبيعات", en: "Sales forecasting" },
+      { ar: "عروض الأسعار وأوامر البيع", en: "Quotations & sales orders" },
+      { ar: "سجل التواصل", en: "Communication history" },
+      { ar: "العمولات والمستهدفات", en: "Commissions & targets" },
+      { ar: "قوائم أسعار وخصومات", en: "Pricelists & discounts" },
+    ],
+    platforms: ["whatsapp", "payments", "ecommerce"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "فرص تُتابع في وقتها", en: "Opportunities followed up on time" } },
+    replaces: [{ ar: "Salesforce", en: "Salesforce" }, { ar: "HubSpot", en: "HubSpot" }, { ar: "جداول المبيعات", en: "Sales spreadsheets" }],
+    mock: {
+      title: { ar: "مسار المبيعات", en: "Pipeline" },
+      cols: [{ ar: "الفرصة", en: "Opportunity" }, { ar: "المرحلة", en: "Stage" }, { ar: "القيمة", en: "Value" }, { ar: "المندوب", en: "Rep" }],
+      rows: [
+        [{ ar: "توريد أثاث مكتبي", en: "Office furniture supply" }, { ar: "عرض سعر", en: "Quoted" }, "48,000", { ar: "سارة", en: "Sara" }],
+        [{ ar: "عقد صيانة سنوي", en: "Annual maintenance" }, { ar: "تفاوض", en: "Negotiation" }, "22,500", { ar: "خالد", en: "Khaled" }],
+        [{ ar: "تجهيز فرع جدة", en: "Jeddah branch fit-out" }, { ar: "مؤهلة", en: "Qualified" }, "130,000", { ar: "ريم", en: "Reem" }],
+      ],
+    },
+  },
+  {
+    slug: "inventory-purchase",
+    icon: "inv",
+    tone: "mint",
+    name: { ar: "المخزون والمشتريات", en: "Inventory & Purchase" },
+    short: { ar: "مستودعات وباركود", en: "Warehouses & barcode" },
+    headline: { ar: "تعرف ما لديك في كل مستودع، الآن", en: "Know what is in every warehouse, right now" },
+    intro: {
+      ar: "المخزون يُحدَّث مع كل بيع وشراء وتصنيع، وقواعد إعادة الطلب تنشئ أوامر الشراء قبل أن ينفد الصنف، والباركود يلغي أخطاء الإدخال.",
+      en: "Stock updates with every sale, purchase and production order, reorder rules raise purchase orders before items run out, and barcodes remove entry errors.",
+    },
+    highlights: [
+      { title: { ar: "مستودعات متعددة", en: "Multi-warehouse" }, text: { ar: "فروع ومواقع ورفوف، مع تحويلات بينها وتتبع كل حركة.", en: "Branches, locations and bins, with transfers and full traceability." } },
+      { title: { ar: "شراء تلقائي", en: "Automatic purchasing" }, text: { ar: "حد أدنى وأقصى لكل صنف، وطلبات عروض للموردين بضغطة.", en: "Min/max per item and supplier RFQs in one click." } },
+      { title: { ar: "شحن مربوط", en: "Connected shipping" }, text: { ar: "بوليصة Aramex أو SMSA تُنشأ من أمر التسليم ويُتابع رقم التتبع.", en: "Aramex or SMSA waybills are created from the delivery order with tracking." } },
+    ],
+    features: [
+      { ar: "مستودعات ومواقع متعددة", en: "Multiple warehouses & locations" },
+      { ar: "أوامر الشراء والموردين", en: "Purchase orders & vendors" },
+      { ar: "تقييم المخزون", en: "Inventory valuation" },
+      { ar: "قواعد إعادة الطلب", en: "Reordering rules" },
+      { ar: "الباركود والدفعات والأرقام التسلسلية", en: "Barcode, lots & serials" },
+      { ar: "الجرد الدوري", en: "Cycle counts" },
+    ],
+    platforms: ["shipping", "ecommerce"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "فروقات جرد أقل", en: "Fewer stock discrepancies" } },
+    replaces: [{ ar: "جداول Excel", en: "Excel sheets" }, { ar: "برنامج مستودعات منفصل", en: "Standalone warehouse software" }],
+    mock: {
+      title: { ar: "أرصدة المخزون", en: "Stock on hand" },
+      cols: [{ ar: "الصنف", en: "Item" }, { ar: "المستودع", en: "Warehouse" }, { ar: "الكمية", en: "Qty" }, { ar: "الحالة", en: "Status" }],
+      rows: [
+        ["SKU-1042", { ar: "الرياض", en: "Riyadh" }, "1,240", { ar: "متاح", en: "Available" }],
+        ["SKU-2210", { ar: "عمّان", en: "Amman" }, "36", { ar: "إعادة طلب", en: "Reorder" }],
+        ["SKU-3307", { ar: "جدة", en: "Jeddah" }, "512", { ar: "متاح", en: "Available" }],
+      ],
+    },
+  },
+  {
+    slug: "hr",
+    icon: "hr",
+    tone: "amber",
+    name: { ar: "الموارد البشرية", en: "Human Resources" },
+    short: { ar: "ملفات وعقود وإجازات", en: "Files, contracts, leave" },
+    headline: { ar: "ملف كل موظف في مكان واحد، ومربوط مع قوى", en: "Every employee file in one place, synced with Qiwa" },
+    intro: {
+      ar: "العقود وبيانات الموظفين متزامنة مع منصة قوى، والإجازات والتقييمات والمستندات والعهد في ملف واحد لكل موظف، مع خدمة ذاتية من الجوال.",
+      en: "Contracts and employee data stay in sync with Qiwa, and leave, appraisals, documents and custody live in one file per employee, with mobile self-service.",
+    },
+    highlights: [
+      { title: { ar: "عقود متزامنة", en: "Synced contracts" }, text: { ar: "بيانات العقد والمهنة والأجر مطابقة لما في قوى، مع تنبيه قبل انتهاء العقود والإقامات.", en: "Contract, occupation and wage data match Qiwa, with alerts before contracts and iqamas expire." } },
+      { title: { ar: "خدمة ذاتية", en: "Self-service" }, text: { ar: "الموظف يطلب إجازة أو شهادة راتب من جواله، والمدير يعتمد.", en: "Employees request leave or salary certificates from their phone; managers approve." } },
+      { title: { ar: "تقييم أداء", en: "Performance reviews" }, text: { ar: "دورات تقييم وأهداف وتقييم 360، مربوطة بالزيادات.", en: "Review cycles, goals and 360 feedback, linked to raises." } },
+    ],
+    features: [
+      { ar: "قاعدة الموظفين والهيكل التنظيمي", en: "Employee directory & org chart" },
+      { ar: "التوظيف وتتبع المتقدمين", en: "Recruitment & applicant tracking" },
+      { ar: "الإجازات والغياب", en: "Time off & absences" },
+      { ar: "تقييمات الأداء", en: "Appraisals" },
+      { ar: "المستندات والعهد", en: "Documents & custody" },
+      { ar: "الخدمة الذاتية للموظف", en: "Employee self-service" },
+    ],
+    platforms: ["qiwa", "gosi", "ssc"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "عمل إداري أقل لقسم الموارد البشرية", en: "Less admin work for HR" } },
+    replaces: [{ ar: "Bayzat", en: "Bayzat" }, { ar: "Jisr", en: "Jisr" }, { ar: "ملفات ورقية", en: "Paper files" }],
+    mock: {
+      title: { ar: "الموظفون", en: "Employees" },
+      cols: [{ ar: "الموظف", en: "Employee" }, { ar: "القسم", en: "Department" }, { ar: "العقد", en: "Contract" }, { ar: "قوى", en: "Qiwa" }],
+      rows: [
+        [{ ar: "أحمد سالم", en: "Ahmad Salem" }, { ar: "المبيعات", en: "Sales" }, "2027-03", { ar: "مطابق", en: "Synced" }],
+        [{ ar: "لينا حداد", en: "Lina Haddad" }, { ar: "المالية", en: "Finance" }, "2026-12", { ar: "ينتهي قريباً", en: "Expiring" }],
+        [{ ar: "عمر العتيبي", en: "Omar Alotaibi" }, { ar: "العمليات", en: "Operations" }, "2028-01", { ar: "مطابق", en: "Synced" }],
+      ],
+    },
+  },
+  {
+    slug: "attendance-payroll",
+    icon: "pay",
+    tone: "navy",
+    name: { ar: "الحضور والرواتب", en: "Attendance & Payroll" },
+    short: { ar: "من البصمة إلى مدد", en: "From fingerprint to Mudad" },
+    headline: { ar: "من البصمة إلى الراتب إلى مدد، دون جدول واحد", en: "From fingerprint to payslip to Mudad, without a spreadsheet" },
+    intro: {
+      ar: "حركات أجهزة البصمة تتحول إلى ساعات ثم إلى مسير رواتب، وملف حماية الأجور يُرفع إلى مدد، واشتراكات التأمينات أو الضمان تُحسب تلقائياً.",
+      en: "Fingerprint punches become hours and then a payroll run, the wage-protection file goes to Mudad, and social insurance contributions are calculated automatically.",
+    },
+    highlights: [
+      { title: { ar: "ربط أجهزة البصمة", en: "Biometric devices" }, text: { ar: "ZKTeco وغيرها، لعدة فروع، مع احتساب التأخير والإضافي.", en: "ZKTeco and others across branches, with lateness and overtime." } },
+      { title: { ar: "رواتب حسب نظام بلدك", en: "Local payroll rules" }, text: { ar: "قواعد رواتب سعودية وأردنية: بدلات، استقطاعات، تأمينات وضمان، ونهاية خدمة.", en: "Saudi and Jordanian rules: allowances, deductions, GOSI/SSC and end of service." } },
+      { title: { ar: "حماية الأجور", en: "Wage protection" }, text: { ar: "ملف WPS وملف تحويل البنك يخرجان من مسير الرواتب المعتمد.", en: "WPS and bank transfer files come straight from the approved payroll." } },
+    ],
+    features: [
+      { ar: "ربط أجهزة البصمة", en: "Biometric device sync" },
+      { ar: "الإضافي والمناوبات", en: "Overtime & shifts" },
+      { ar: "احتساب الرواتب", en: "Payroll computation" },
+      { ar: "قسائم الرواتب", en: "Payslips" },
+      { ar: "ملف حماية الأجور WPS", en: "WPS wage file" },
+      { ar: "مكافأة نهاية الخدمة", en: "End-of-service benefits" },
+    ],
+    platforms: ["mudad", "gosi", "ssc", "biometric", "banks"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "إعداد رواتب أسرع", en: "Faster payroll runs" } },
+    replaces: [{ ar: "Excel الرواتب", en: "Payroll spreadsheets" }, { ar: "الرفع اليدوي إلى مدد", en: "Manual uploads to Mudad" }],
+    mock: {
+      title: { ar: "مسير رواتب أكتوبر", en: "October payroll" },
+      cols: [{ ar: "الموظف", en: "Employee" }, { ar: "أيام", en: "Days" }, { ar: "الصافي", en: "Net" }, { ar: "مدد", en: "Mudad" }],
+      rows: [
+        [{ ar: "أحمد سالم", en: "Ahmad Salem" }, "30", "8,450", { ar: "مرفوع", en: "Uploaded" }],
+        [{ ar: "لينا حداد", en: "Lina Haddad" }, "28", "6,920", { ar: "مرفوع", en: "Uploaded" }],
+        [{ ar: "عمر العتيبي", en: "Omar Alotaibi" }, "30", "7,300", { ar: "جاهز", en: "Ready" }],
+      ],
+    },
+  },
+  {
+    slug: "projects",
+    icon: "prj",
+    tone: "violet",
+    name: { ar: "المشاريع والمهام", en: "Projects & Tasks" },
+    short: { ar: "كانبان وساعات وفوترة", en: "Kanban, timesheets, billing" },
+    headline: { ar: "كل مشروع بمهامه وساعاته وربحيته", en: "Every project with its tasks, hours and margin" },
+    intro: {
+      ar: "الساعات المسجلة على المهام تُفوتَر للعميل مباشرة، والمدير يرى الحمل على الفريق، وتعرف ربحية كل مشروع قبل أن ينتهي.",
+      en: "Hours logged on tasks are billed directly, managers see team workload, and you know each project's margin before it ends.",
+    },
+    highlights: [
+      { title: { ar: "لوحات كانبان", en: "Kanban boards" }, text: { ar: "مراحل مخصصة لكل نوع مشروع، مع مواعيد وتنبيهات.", en: "Custom stages per project type, with deadlines and alerts." } },
+      { title: { ar: "سجل ساعات", en: "Timesheets" }, text: { ar: "من الجوال أو الحاسوب، ومربوط بالفوترة والرواتب.", en: "From phone or desktop, linked to billing and payroll." } },
+      { title: { ar: "ربحية فعلية", en: "Real profitability" }, text: { ar: "الإيراد مقابل كلفة الساعات والمصاريف لكل مشروع.", en: "Revenue against hours and expenses per project." } },
+    ],
+    features: [
+      { ar: "مراحل المشروع", en: "Project stages" },
+      { ar: "لوحات كانبان وغانت", en: "Kanban & Gantt" },
+      { ar: "سجل الساعات", en: "Timesheets" },
+      { ar: "فوترة الساعات والمراحل", en: "Time & milestone billing" },
+      { ar: "توزيع الموارد", en: "Resource planning" },
+      { ar: "ربحية المشاريع", en: "Project profitability" },
+    ],
+    platforms: ["whatsapp"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "ساعات أكثر تُفوتر", en: "More billable hours captured" } },
+    replaces: [{ ar: "Monday", en: "Monday" }, { ar: "Asana", en: "Asana" }, { ar: "Trello", en: "Trello" }],
+    mock: {
+      title: { ar: "المشاريع", en: "Projects" },
+      cols: [{ ar: "المشروع", en: "Project" }, { ar: "التقدم", en: "Progress" }, { ar: "الساعات", en: "Hours" }, { ar: "الهامش", en: "Margin" }],
+      rows: [
+        [{ ar: "تطبيق نقاط البيع", en: "POS rollout" }, "72%", "340", "31%"],
+        [{ ar: "تجهيز مستودع", en: "Warehouse setup" }, "45%", "128", "24%"],
+        [{ ar: "حملة إطلاق", en: "Launch campaign" }, "90%", "86", "38%"],
+      ],
+    },
+  },
+  {
+    slug: "manufacturing",
+    icon: "mfg",
+    tone: "mint",
+    name: { ar: "التصنيع", en: "Manufacturing" },
+    short: { ar: "قوائم مواد وأوامر تشغيل", en: "BoMs & work orders" },
+    headline: { ar: "أمر التصنيع يحجز المواد ويحدّث المخزون وحده", en: "Work orders reserve materials and update stock on their own" },
+    intro: {
+      ar: "قوائم المواد وأوامر التشغيل ونقاط الجودة مرتبطة بالمخزون والمشتريات، فلا يتوقف الخط لنقص مادة، وتعرف كلفة كل منتج بدقة.",
+      en: "Bills of materials, work orders and quality checks are tied to stock and purchasing, so lines never stop for a missing part and you know the true cost of every product.",
+    },
+    highlights: [
+      { title: { ar: "تخطيط الاحتياجات", en: "Material planning" }, text: { ar: "MRP يحسب ما يلزم شراؤه وتصنيعه من الطلبات الفعلية.", en: "MRP calculates what to buy and make from real demand." } },
+      { title: { ar: "شاشات المصنع", en: "Shop-floor screens" }, text: { ar: "العامل يبدأ وينهي العملية من جهاز لوحي بجانب الآلة.", en: "Operators start and finish operations from a tablet at the machine." } },
+      { title: { ar: "جودة موثقة", en: "Documented quality" }, text: { ar: "نقاط فحص إلزامية وتنبيهات عند الرفض.", en: "Mandatory checkpoints with alerts on failure." } },
+    ],
+    features: [
+      { ar: "قوائم المواد", en: "Bills of materials" },
+      { ar: "أوامر التشغيل والتوجيه", en: "Work orders & routings" },
+      { ar: "نقاط فحص الجودة", en: "Quality checks" },
+      { ar: "تخطيط الاحتياجات MRP", en: "MRP planning" },
+      { ar: "الصيانة", en: "Maintenance" },
+      { ar: "كلفة المنتج الفعلية", en: "Actual product costing" },
+    ],
+    platforms: [],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "توقفات أقل في الإنتاج", en: "Less production downtime" } },
+    replaces: [{ ar: "Excel الإنتاج", en: "Production spreadsheets" }, { ar: "نظام قديم معزول", en: "Isolated legacy system" }],
+    mock: {
+      title: { ar: "أوامر التصنيع", en: "Manufacturing orders" },
+      cols: [{ ar: "الأمر", en: "Order" }, { ar: "المنتج", en: "Product" }, { ar: "الكمية", en: "Qty" }, { ar: "الحالة", en: "Status" }],
+      rows: [
+        ["MO/0231", { ar: "كرسي مكتب", en: "Office chair" }, "120", { ar: "قيد التشغيل", en: "In progress" }],
+        ["MO/0232", { ar: "طاولة اجتماعات", en: "Meeting table" }, "40", { ar: "مواد جاهزة", en: "Ready" }],
+        ["MO/0233", { ar: "خزانة ملفات", en: "File cabinet" }, "75", { ar: "بانتظار مواد", en: "Waiting" }],
+      ],
+    },
+  },
+  {
+    slug: "helpdesk",
+    icon: "hd",
+    tone: "amber",
+    name: { ar: "دعم العملاء", en: "Helpdesk" },
+    short: { ar: "تذاكر من كل القنوات", en: "Tickets from every channel" },
+    headline: { ar: "كل طلبات العملاء في قائمة واحدة", en: "Every customer request in one queue" },
+    intro: {
+      ar: "البريد والواتساب ونموذج الموقع تصل كتذاكر، مع اتفاقيات مستوى خدمة وتصعيد تلقائي، وسجل العميل كاملاً أمام الموظف.",
+      en: "Email, WhatsApp and web forms arrive as tickets, with SLAs and automatic escalation, and the full customer history in front of the agent.",
+    },
+    highlights: [
+      { title: { ar: "قنوات موحدة", en: "Unified channels" }, text: { ar: "واتساب والبريد والموقع في صندوق واحد.", en: "WhatsApp, email and website in one inbox." } },
+      { title: { ar: "اتفاقيات مستوى الخدمة", en: "SLA tracking" }, text: { ar: "مؤقت لكل تذكرة وتصعيد قبل التأخير.", en: "A timer on every ticket and escalation before it is late." } },
+      { title: { ar: "بوابة العملاء", en: "Customer portal" }, text: { ar: "العميل يتابع طلبه ويقرأ قاعدة المعرفة دون اتصال.", en: "Customers track requests and read the knowledge base without calling." } },
+    ],
+    features: [
+      { ar: "إدارة التذاكر", en: "Ticket management" },
+      { ar: "اتفاقيات مستوى الخدمة", en: "SLA policies" },
+      { ar: "قاعدة المعرفة", en: "Knowledge base" },
+      { ar: "بوابة العملاء", en: "Customer portal" },
+      { ar: "التصعيد التلقائي", en: "Auto escalation" },
+      { ar: "استبيانات الرضا", en: "Satisfaction surveys" },
+    ],
+    platforms: ["whatsapp"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "رد أول أسرع", en: "Faster first response" } },
+    replaces: [{ ar: "Zendesk", en: "Zendesk" }, { ar: "Freshdesk", en: "Freshdesk" }],
+    mock: {
+      title: { ar: "التذاكر", en: "Tickets" },
+      cols: [{ ar: "التذكرة", en: "Ticket" }, { ar: "القناة", en: "Channel" }, { ar: "الأولوية", en: "Priority" }, { ar: "المتبقي", en: "SLA left" }],
+      rows: [
+        ["#1882", { ar: "واتساب", en: "WhatsApp" }, { ar: "عالية", en: "High" }, "0:42"],
+        ["#1881", { ar: "البريد", en: "Email" }, { ar: "عادية", en: "Normal" }, "3:10"],
+        ["#1879", { ar: "الموقع", en: "Website" }, { ar: "عادية", en: "Normal" }, "5:55"],
+      ],
+    },
+  },
+  {
+    slug: "business-intelligence",
+    icon: "bi",
+    tone: "navy",
+    name: { ar: "ذكاء الأعمال", en: "Business Intelligence" },
+    short: { ar: "لوحات ومؤشرات لحظية", en: "Live dashboards & KPIs" },
+    headline: { ar: "لوحة إدارة محدّثة دائماً", en: "A management dashboard that is always up to date" },
+    intro: {
+      ar: "مؤشرات المبيعات والنقد والمخزون والموارد البشرية في لوحة واحدة، مبنية على بيانات النظام نفسه، وتصل بريد الإدارة كل أسبوع.",
+      en: "Sales, cash, stock and HR indicators on one dashboard, built on the system's own data, delivered to management's inbox every week.",
+    },
+    highlights: [
+      { title: { ar: "رقم واحد للحقيقة", en: "One source of truth" }, text: { ar: "كل الأقسام تقرأ من نفس البيانات، فلا خلاف على الأرقام.", en: "Every department reads the same data, so no one argues about numbers." } },
+      { title: { ar: "لوحات حسب الدور", en: "Role-based dashboards" }, text: { ar: "المدير العام يرى الصورة الكاملة، ومدير الفرع يرى فرعه فقط.", en: "The CEO sees everything; branch managers see their branch." } },
+      { title: { ar: "تقارير مجدولة", en: "Scheduled reports" }, text: { ar: "PDF أو Excel يصل في موعده دون أن يطلبه أحد.", en: "PDF or Excel delivered on schedule without anyone asking." } },
+    ],
+    features: [
+      { ar: "لوحات مخصصة", en: "Custom dashboards" },
+      { ar: "تقارير موحدة عبر الأقسام", en: "Cross-department reports" },
+      { ar: "إرسال مجدول", en: "Scheduled delivery" },
+      { ar: "تصدير وتحليل", en: "Export & pivot analysis" },
+      { ar: "مؤشرات حسب الشركة والفرع", en: "KPIs by company & branch" },
+      { ar: "عرض تنفيذي", en: "Executive summary" },
+    ],
+    platforms: [],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "أرقام لحظية بدل تقرير آخر الشهر", en: "Live figures instead of a month-end report" } },
+    replaces: [{ ar: "تقارير Excel يدوية", en: "Manual Excel reports" }, { ar: "Power BI بإدخال يدوي", en: "Manually-fed Power BI" }],
+    mock: {
+      title: { ar: "مؤشرات الإدارة", en: "Management KPIs" },
+      cols: [{ ar: "المؤشر", en: "KPI" }, { ar: "الشهر", en: "Month" }, { ar: "الهدف", en: "Target" }, { ar: "التغير", en: "Change" }],
+      rows: [
+        [{ ar: "المبيعات", en: "Revenue" }, "1.24M", "1.10M", "+12%"],
+        [{ ar: "النقد المتاح", en: "Cash on hand" }, "640K", "500K", "+8%"],
+        [{ ar: "دوران المخزون", en: "Stock turns" }, "5.1", "6.0", "−4%"],
+      ],
+    },
+  },
+  {
+    slug: "ai-automation",
+    icon: "ai",
+    tone: "violet",
+    name: { ar: "أتمتة بالذكاء الاصطناعي", en: "AI Automation" },
+    short: { ar: "مهام روتينية تلقائية", en: "Routine work, automated" },
+    headline: { ar: "المهام المكررة يقوم بها النظام", en: "Let the system do the repetitive work" },
+    intro: {
+      ar: "قراءة الفواتير الواردة، والتنبيهات الذكية، وقواعد سير العمل التي تنقل الطلب من قسم إلى قسم، ومساعد يجيب بالعربية من بيانات نظامك.",
+      en: "Reading incoming bills, smart alerts, workflow rules that move requests between departments, and an assistant that answers in Arabic from your own data.",
+    },
+    highlights: [
+      { title: { ar: "قراءة المستندات", en: "Document capture" }, text: { ar: "صورة فاتورة المورد تتحول إلى قيد جاهز للمراجعة.", en: "A photo of a vendor bill becomes an entry ready for review." } },
+      { title: { ar: "مساعد بالعربية", en: "Arabic assistant" }, text: { ar: "اسأل عن المبيعات أو الرواتب واحصل على الرقم مع التفاصيل.", en: "Ask about sales or payroll and get the number with the detail." } },
+      { title: { ar: "قواعد سير العمل", en: "Workflow rules" }, text: { ar: "موافقات وتنبيهات ومهام تُنشأ تلقائياً حسب شروطك.", en: "Approvals, alerts and tasks created automatically by your conditions." } },
+    ],
+    features: [
+      { ar: "قراءة المستندات آلياً", en: "Automatic document reading" },
+      { ar: "التحقق من البيانات", en: "Data validation" },
+      { ar: "تنبيهات ذكية", en: "Smart alerts" },
+      { ar: "قواعد سير العمل", en: "Workflow rules" },
+      { ar: "مساعد محادثة بالعربية", en: "Arabic chat assistant" },
+      { ar: "رؤى تنبؤية", en: "Predictive insights" },
+    ],
+    platforms: ["whatsapp"],
+    kpi: { value: { ar: "", en: "" }, label: { ar: "إدخال يدوي أقل بكثير", en: "Far less manual data entry" } },
+    replaces: [{ ar: "إدخال يدوي", en: "Manual data entry" }, { ar: "متابعة بالبريد والهاتف", en: "Email and phone chasing" }],
+    mock: {
+      title: { ar: "فواتير موردين مقروءة آلياً", en: "Auto-read vendor bills" },
+      cols: [{ ar: "المورد", en: "Vendor" }, { ar: "المبلغ", en: "Amount" }, { ar: "الدقة", en: "Confidence" }, { ar: "الحالة", en: "Status" }],
+      rows: [
+        [{ ar: "شركة التوريد المتحدة", en: "United Supply Co." }, "4,380", "98%", { ar: "جاهز", en: "Ready" }],
+        [{ ar: "مطبعة النور", en: "Al Noor Print" }, "1,150", "95%", { ar: "جاهز", en: "Ready" }],
+        [{ ar: "نقل سريع", en: "Fast Freight" }, "2,040", "81%", { ar: "مراجعة", en: "Review" }],
+      ],
+    },
+  },
+];
+
+import { moreApps } from "./apps-more";
+
+const appMeta: Record<string, { cat: AppCat; shot: ShotKind }> = {
+  accounting: { cat: "finance", shot: "invoice" },
+  "crm-sales": { cat: "sales", shot: "kanban" },
+  "inventory-purchase": { cat: "operations", shot: "inventory" },
+  hr: { cat: "people", shot: "phone" },
+  "attendance-payroll": { cat: "people", shot: "payroll" },
+  projects: { cat: "services", shot: "kanban" },
+  manufacturing: { cat: "operations", shot: "inventory" },
+  helpdesk: { cat: "services", shot: "helpdesk" },
+  "business-intelligence": { cat: "finance", shot: "dashboard" },
+  "ai-automation": { cat: "services", shot: "ai" },
+};
+export const apps: App[] = [...coreApps.map((a) => ({ ...a, ...appMeta[a.slug] })), ...moreApps];
+
+export const appCats: { id: AppCat; name: L }[] = [
+  { id: "finance", name: { ar: "المالية", en: "Finance" } },
+  { id: "sales", name: { ar: "المبيعات", en: "Sales" } },
+  { id: "operations", name: { ar: "العمليات", en: "Operations" } },
+  { id: "people", name: { ar: "الموارد البشرية", en: "People" } },
+  { id: "services", name: { ar: "الخدمات والإنتاجية", en: "Services & productivity" } },
+];
+
+/* ------------------------------------------------------------------ */
+/* Platforms                                                           */
+/* ------------------------------------------------------------------ */
+export const platforms: Platform[] = [
+  {
+    slug: "zatca", logos: ["zatca.svg"], group: "sa", badge: "ZATCA", tone: "mint",
+    name: { ar: "فاتورة · هيئة الزكاة والضريبة والجمارك", en: "FATOORA · ZATCA" },
+    owner: { ar: "الفوترة الإلكترونية · المرحلة الثانية (الربط والتكامل)", en: "E-invoicing · Phase 2 (integration)" },
+    summary: { ar: "كل فاتورة ضريبية تُوقَّع وتُرسل إلى منصة فاتورة من داخل النظام، مع رمز QR وحالة الاعتماد.", en: "Every tax invoice is signed and sent to FATOORA from inside the system, with QR code and clearance status." },
+    steps: [
+      { ar: "تسجيل وحدة الفوترة والحصول على الشهادة", en: "Onboard the e-invoicing unit and obtain its certificate" },
+      { ar: "توقيع كل فاتورة وتوليد رمز QR", en: "Sign every invoice and generate the QR code" },
+      { ar: "إرسال فواتير B2B للاعتماد وB2C للإبلاغ", en: "Send B2B invoices for clearance and B2C for reporting" },
+      { ar: "عرض حالة كل فاتورة وأخطائها داخل النظام", en: "Show each invoice's status and errors in the system" },
+    ],
+  },
+  {
+    slug: "qiwa", logos: ["qiwa.png"], group: "sa", badge: "قوى", tone: "violet",
+    name: { ar: "قوى · وزارة الموارد البشرية", en: "Qiwa · Ministry of HR" },
+    owner: { ar: "عقود العمل وبيانات المنشأة", en: "Employment contracts & establishment data" },
+    summary: { ar: "بيانات الموظفين وعقودهم في النظام تبقى مطابقة لما في قوى، مع تنبيهات الانتهاء ومتابعة التوطين.", en: "Employee and contract data in the system stays aligned with Qiwa, with expiry alerts and Saudization tracking." },
+    steps: [
+      { ar: "مطابقة بيانات الموظفين والعقود", en: "Match employee and contract records" },
+      { ar: "تنبيهات انتهاء العقود والإقامات", en: "Alerts for expiring contracts and iqamas" },
+      { ar: "متابعة نسبة التوطين من النظام", en: "Track Saudization ratio from the system" },
+      { ar: "سجل تغييرات لكل موظف", en: "Change log per employee" },
+    ],
+  },
+  {
+    slug: "mudad", logos: ["mudad.png"], group: "sa", badge: "مدد", tone: "navy",
+    name: { ar: "مدد · حماية الأجور", en: "Mudad · Wage Protection" },
+    owner: { ar: "رفع ملف الرواتب WPS", en: "WPS payroll file submission" },
+    summary: { ar: "مسير الرواتب المعتمد يولد ملف حماية الأجور بالصيغة المطلوبة ويُرفع دون تحميل يدوي.", en: "The approved payroll produces the wage-protection file in the required format, submitted without manual uploads." },
+    steps: [
+      { ar: "اعتماد مسير الرواتب داخل النظام", en: "Approve payroll inside the system" },
+      { ar: "توليد ملف حماية الأجور", en: "Generate the WPS file" },
+      { ar: "الرفع إلى مدد", en: "Submit to Mudad" },
+      { ar: "مطابقة المدفوع مع البنك", en: "Reconcile payments with the bank" },
+    ],
+  },
+  {
+    slug: "gosi", logos: ["gosi.svg"], group: "sa", badge: "GOSI", tone: "amber",
+    name: { ar: "التأمينات الاجتماعية", en: "GOSI" },
+    owner: { ar: "اشتراكات الموظفين", en: "Employee contributions" },
+    summary: { ar: "الاشتراكات تُحسب ضمن الرواتب وتتحول إلى قيود محاسبية وتقرير شهري.", en: "Contributions are calculated within payroll and posted as journal entries with a monthly report." },
+    steps: [
+      { ar: "احتساب الاشتراك ضمن مسير الرواتب", en: "Calculate contributions in payroll" },
+      { ar: "تقرير الاشتراكات الشهري", en: "Monthly contribution report" },
+      { ar: "تحديث الأجور عند تغيّرها", en: "Update wages when they change" },
+      { ar: "قيود محاسبية تلقائية", en: "Automatic journal entries" },
+    ],
+  },
+  {
+    slug: "jofotara", logos: ["jofotara.png"], group: "jo", badge: "JoFotara", tone: "mint",
+    name: { ar: "JoFotara · نظام الفوترة الوطني", en: "JoFotara · National E-invoicing" },
+    owner: { ar: "دائرة ضريبة الدخل والمبيعات", en: "Income & Sales Tax Department" },
+    summary: { ar: "كل فاتورة تُرسل إلى JoFotara لحظة إصدارها ويُطبع رمز QR عليها، مع الإشعارات الدائنة والمدينة.", en: "Each invoice is sent to JoFotara when issued and printed with its QR code, including credit and debit notes." },
+    steps: [
+      { ar: "ربط النظام بحساب المنشأة في JoFotara", en: "Connect the system to your JoFotara account" },
+      { ar: "إرسال كل فاتورة لحظة إصدارها", en: "Send every invoice as it is issued" },
+      { ar: "استلام رمز QR وطباعته على الفاتورة", en: "Receive the QR code and print it on the invoice" },
+      { ar: "إشعارات دائنة ومدينة مربوطة بالأصل", en: "Credit and debit notes linked to the original" },
+    ],
+  },
+  {
+    slug: "ssc", logos: ["ssc.png"], group: "jo", badge: "SSC", tone: "navy",
+    name: { ar: "الضمان الاجتماعي", en: "Social Security Corporation" },
+    owner: { ar: "اشتراكات الموظفين في الأردن", en: "Employee contributions in Jordan" },
+    summary: { ar: "اشتراكات الضمان تُحسب ضمن الرواتب مع كشف شهري وقيود تلقائية.", en: "Social security contributions are calculated in payroll with a monthly statement and automatic entries." },
+    steps: [
+      { ar: "احتساب الاشتراك ضمن الرواتب", en: "Calculate contributions in payroll" },
+      { ar: "كشف الاشتراكات الشهري", en: "Monthly contribution statement" },
+      { ar: "قيود محاسبية تلقائية", en: "Automatic journal entries" },
+      { ar: "تنبيه عند تغيير الأجور", en: "Alerts when wages change" },
+    ],
+  },
+  {
+    slug: "banks", group: "biz", badge: "BANK", tone: "violet",
+    name: { ar: "البنوك", en: "Banks" },
+    owner: { ar: "الأردن والسعودية", en: "Jordan & Saudi Arabia" },
+    summary: { ar: "استيراد الكشوف ومطابقتها، وملفات تحويل الرواتب بصيغة كل بنك.", en: "Statement import and matching, plus salary transfer files in each bank's format." },
+    steps: [
+      { ar: "استيراد الكشف البنكي", en: "Import bank statements" },
+      { ar: "مطابقة تلقائية مع الفواتير", en: "Auto-match with invoices" },
+      { ar: "ملف تحويل الرواتب", en: "Salary transfer file" },
+      { ar: "تقارير النقد اليومية", en: "Daily cash reports" },
+    ],
+  },
+  {
+    slug: "payments", logos: ["hyperpay.svg", "tap.svg", "moyasar.png", "mada.svg"], group: "biz", badge: "PAY", tone: "mint",
+    name: { ar: "بوابات الدفع", en: "Payment gateways" },
+    owner: { ar: "HyperPay · Tap · Moyasar", en: "HyperPay · Tap · Moyasar" },
+    summary: { ar: "رابط دفع على الفاتورة وعرض السعر، والدفعة تُسجل تلقائياً.", en: "Payment links on invoices and quotes, with payments recorded automatically." },
+    steps: [
+      { ar: "رابط دفع على الفاتورة", en: "Payment link on the invoice" },
+      { ar: "مدى وفيزا وApple Pay", en: "mada, Visa and Apple Pay" },
+      { ar: "تسجيل الدفعة تلقائياً", en: "Payment recorded automatically" },
+      { ar: "مطابقة التسويات", en: "Settlement reconciliation" },
+    ],
+  },
+  {
+    slug: "shipping", logos: ["aramex.svg", "smsa.svg"], group: "biz", badge: "SHIP", tone: "amber",
+    name: { ar: "شركات الشحن", en: "Shipping carriers" },
+    owner: { ar: "Aramex · SMSA", en: "Aramex · SMSA" },
+    summary: { ar: "بوليصة الشحن تُنشأ من أمر التسليم ويُتابع رقم التتبع.", en: "Waybills are created from delivery orders with live tracking." },
+    steps: [
+      { ar: "إنشاء البوليصة من أمر التسليم", en: "Create the waybill from the delivery order" },
+      { ar: "طباعة الملصق", en: "Print the label" },
+      { ar: "تتبع الشحنة", en: "Track the shipment" },
+      { ar: "تحصيل الدفع عند الاستلام", en: "Cash-on-delivery reconciliation" },
+    ],
+  },
+  {
+    slug: "ecommerce", logos: ["salla.webp", "zid.svg", "shopify.svg"], group: "biz", badge: "SHOP", tone: "navy",
+    name: { ar: "المتاجر الإلكترونية", en: "E-commerce stores" },
+    owner: { ar: "سلة · زد · Shopify", en: "Salla · Zid · Shopify" },
+    summary: { ar: "الطلبات تصل النظام تلقائياً، والمخزون والأسعار تُحدَّث على المتجر.", en: "Orders flow into the system and stock and prices sync back to the store." },
+    steps: [
+      { ar: "سحب الطلبات تلقائياً", en: "Pull orders automatically" },
+      { ar: "مزامنة المخزون والأسعار", en: "Sync stock and prices" },
+      { ar: "فوترة إلكترونية للطلب", en: "E-invoice every order" },
+      { ar: "تسوية مدفوعات المتجر", en: "Reconcile store payouts" },
+    ],
+  },
+  {
+    slug: "whatsapp", logos: ["whatsapp.svg"], group: "biz", badge: "WA", tone: "mint",
+    name: { ar: "واتساب للأعمال", en: "WhatsApp Business" },
+    owner: { ar: "WhatsApp Business API", en: "WhatsApp Business API" },
+    summary: { ar: "عروض الأسعار والفواتير والتذكيرات وحالة الطلب تصل العميل على واتساب.", en: "Quotes, invoices, reminders and order status reach customers on WhatsApp." },
+    steps: [
+      { ar: "قوالب رسائل معتمدة", en: "Approved message templates" },
+      { ar: "إرسال من أي مستند", en: "Send from any document" },
+      { ar: "الردود تصل كتذاكر أو ملاحظات", en: "Replies arrive as tickets or notes" },
+      { ar: "تذكيرات تلقائية", en: "Automatic reminders" },
+    ],
+  },
+  {
+    slug: "biometric", group: "biz", badge: "ZK", tone: "violet",
+    name: { ar: "أجهزة البصمة", en: "Biometric devices" },
+    owner: { ar: "ZKTeco وغيرها", en: "ZKTeco and others" },
+    summary: { ar: "حركات الحضور تُسحب من الأجهزة في كل الفروع وتُحسب مباشرة في الرواتب.", en: "Punches are pulled from devices across branches and flow straight into payroll." },
+    steps: [
+      { ar: "سحب الحركات تلقائياً", en: "Pull punches automatically" },
+      { ar: "احتساب التأخير والإضافي", en: "Compute lateness and overtime" },
+      { ar: "ربط مباشر مع الرواتب", en: "Feed payroll directly" },
+      { ar: "عدة فروع في نظام واحد", en: "Many branches, one system" },
+    ],
+  },
+];
+
+export const platformBySlug = (s: string) => platforms.find((p) => p.slug === s);
+export const appBySlug = (s: string) => apps.find((a) => a.slug === s);
+export const appsUsing = (platform: string) => apps.filter((a) => a.platforms.includes(platform));
+
+export const contact = {
+  jo: [
+    { label: { ar: "شارع زهران", en: "Zahran St." }, phone: "+962 6 222 7604" },
+    { label: { ar: "شفا بدران", en: "Shafa Badran" }, phone: "+962 6 516 4330" },
+    { label: { ar: "السكرتارية", en: "Front desk" }, phone: "+962 7 7599 9908" },
+  ],
+  sa: [{ label: { ar: "الرياض", en: "Riyadh" }, phone: "+966 56 344 7279" }],
+  hours: { ar: "الأحد إلى الخميس، من 8 صباحاً حتى 4 مساءً", en: "Sunday to Thursday, 8 am to 4 pm" },
+};
